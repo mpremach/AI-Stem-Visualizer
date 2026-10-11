@@ -40,5 +40,5 @@ api = Api()
 base_path = get_base_path()
 html_path = os.path.join(base_path, 'web', 'index.html')
 
-webview.create_window('AI Stem Visualizer', html_path, js_api=api, width=1280, height=720)
+webview.create_window('AI Stem Visualizer', html_path, js_api=api, width=1280, height=720, maximized=True)
 webview.start(http_server=True)
