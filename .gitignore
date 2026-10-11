@@ -1,0 +1,17 @@
+# Ignore virtual environment
+venv/
+
+# Ignore large executables
+ffmpeg.exe
+*.exe
+
+# Ignore audio stems and processed files
+web/stems/
+*.mp3
+*.wav
+
+# Ignore Python and PyInstaller build files
+__pycache__/
+build/
+dist/
+*.spec

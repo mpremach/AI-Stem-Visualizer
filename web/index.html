@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Stem Visualizer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="splash-screen">
+        <h1 class="glow-text">AI STEM VISUALIZER</h1>
+        <h3 id="statusText">AWAITING AUDIO INPUT</h3>
+        
+        <div id="progress-container" style="display: none;">
+            <div id="progress-bar"></div>
+        </div>
+
+        <div>
+            <button id="uploadBtnHero">UPLOAD MP3</button>
+            <button id="folderBtnHero">OPEN STEMS FOLDER</button>
+        </div>
+    </div>
+
+    <div id="top-bar" style="display:none;">
+        <button id="uploadBtnSmall">Load New Track</button>
+        <button id="folderBtn">Open Stems Folder</button>
+    </div>
+
+    <div id="mixer">
+        <div id="timeline-container">
+            <span class="slider-label" style="color: #fff;">TIMELINE</span>
+            <input type="range" id="timeline" min="0" max="100" step="0.1" value="0">
+            <br><button id="playPauseBtn" style="margin-top: 10px; width: 100%;">PAUSE</button>
+        </div>
+        <div class="slider-row"><span class="slider-label" style="color: #ff007f;">BASS</span><input type="range" id="vol-0" min="0" max="1" step="0.01" value="1"></div>
+        <div class="slider-row"><span class="slider-label" style="color: #66fcf1;">DRUMS</span><input type="range" id="vol-1" min="0" max="1" step="0.01" value="1"></div>
+        <div class="slider-row"><span class="slider-label" style="color: #39ff14;">VOCALS</span><input type="range" id="vol-2" min="0" max="1" step="0.01" value="1"></div>
+        <div class="slider-row"><span class="slider-label" style="color: #fffb00;">MELODY</span><input type="range" id="vol-3" min="0" max="1" step="0.01" value="1"></div>
+    </div>
+
+    <canvas id="visualizer"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
