@@ -2,6 +2,7 @@ import webview
 import split
 import os
 import sys
+import multiprocessing
 
 # Automatically detect if running as a raw script or a packaged .exe
 def get_base_path():
@@ -35,10 +36,13 @@ class Api:
         if os.path.exists(folder_path):
             os.startfile(folder_path)
 
-# Initialize the UI with the dynamic HTML path
-api = Api()
-base_path = get_base_path()
-html_path = os.path.join(base_path, 'web', 'index.html')
+if __name__ == '__main__':
+    # CRITICAL: This stops PyTorch from opening duplicate windows in the .exe
+    multiprocessing.freeze_support()
+    # Initialize the UI with the dynamic HTML path
+    api = Api()
+    base_path = get_base_path()
+    html_path = os.path.join(base_path, 'web', 'index.html')
 
-webview.create_window('AI Stem Visualizer', html_path, js_api=api, width=1280, height=720, maximized=True)
-webview.start(http_server=True)
+    webview.create_window('AI Stem Visualizer', html_path, js_api=api, width=1280, height=720, maximized=True)
+    webview.start(http_server=True)

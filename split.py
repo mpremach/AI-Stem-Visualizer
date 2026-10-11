@@ -42,18 +42,14 @@ def separate_stems(audio_file, out_dir="stems"):
         print(f"Failed to convert file. Make sure ffmpeg.exe is in the folder. Error: {e}")
         sys.exit(1)
 
-    print(f"Spliting '{track_name}' into 4 stems")
-    cmd = [
-        sys.executable, "-m", "demucs.separate",
-        "-n", "htdemucs",
-        "--out", out_dir,
-        temp_wav
-    ]
+    print(f"Splitting '{track_name}' into 4 stems...")
+    from demucs.separate import main as demucs_main
     
     try:
-        subprocess.run(cmd, check=True)
-    except subprocess.CalledProcessError:
-        print("Error: Demucs failed to process the audio.")
+        # Run Demucs natively without triggering a new terminal process
+        demucs_main(["-n", "htdemucs", "--out", out_dir, temp_wav])
+    except Exception as e:
+        print(f"Error: Demucs failed to process the audio. {e}")
         if os.path.exists(temp_wav): os.remove(temp_wav)
         sys.exit(1)
 
