@@ -95,6 +95,8 @@ function playAudio(offset) {
     buffers.forEach((buffer, index) => {
         const source = audioCtx.createBufferSource();
         source.buffer = buffer;
+        source.playbackRate.value = currentPlaybackRate;
+        
         source.connect(gainNodes[index]);
         gainNodes[index].connect(analyzers[index]);
         analyzers[index].connect(audioCtx.destination);
@@ -117,6 +119,58 @@ function pauseAudio() {
 
 document.getElementById('playPauseBtn').addEventListener('click', () => {
     isPlaying ? pauseAudio() : playAudio(pausedAt);
+});
+
+window.addEventListener('keydown', (e) => {
+    if (e.key === ' ') {
+        e.preventDefault();
+        isPlaying ? pauseAudio() : playAudio(pausedAt);
+    }
+});
+
+let currentPlaybackRate = 1.0;
+
+function updateSpeed(newRate) {
+    currentPlaybackRate = newRate;
+    
+    // Update the UI slider and text
+    const slider = document.getElementById('speed-slider');
+    if (slider) slider.value = newRate;
+    const textVal = document.getElementById('val-speed');
+    if (textVal) textVal.innerText = newRate.toFixed(1) + 'x';
+    
+    // Instantly apply the new speed to all playing audio stems
+    sourceNodes.forEach(source => {
+        if (source) source.playbackRate.value = currentPlaybackRate;
+    });
+}
+
+// Listen for mouse drag on the slider
+document.getElementById('speed-slider').addEventListener('input', (e) => {
+    updateSpeed(parseFloat(e.target.value));
+});
+
+// Keyboard shortcuts for speed control
+window.addEventListener('keydown', (e) => {
+    if (e.repeat) return; // Prevents stuttering while holding the key down
+    
+    // A or Left Arrow to slow down
+    if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') {
+        updateSpeed(0.7);
+    }
+    
+    // D or Right Arrow to speed up
+    if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
+        updateSpeed(1.3); 
+    }
+});
+
+window.addEventListener('keyup', (e) => {
+    // Snap back to normal speed when any of the speed keys are released
+    if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft' || 
+        e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
+        updateSpeed(1.0);
+    }
 });
 
 document.getElementById('timeline').addEventListener('input', (e) => {
