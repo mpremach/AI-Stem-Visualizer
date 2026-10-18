@@ -33,7 +33,7 @@ window.addEventListener('pywebviewready', function() {
                 currentProgress += 1;
                 document.getElementById('progress-bar').style.width = currentProgress + '%';
             }
-        }, 800);
+        }, 1000);
 
         currentTrackName = await window.pywebview.api.process_audio(filePath);
         
@@ -145,12 +145,28 @@ function updateSpeed(newRate) {
     });
 }
 
+// --- Mixer controls ---
+const collapseBtn = document.getElementById('collapseBtn');
+const mixerPanel = document.getElementById('mixer');
+
+if (collapseBtn && mixerPanel) {
+    collapseBtn.addEventListener('click', () => {
+        mixerPanel.classList.toggle('minimized');
+        // Toggle the button text between [-] and [+]
+        if (mixerPanel.classList.contains('minimized')) {
+            collapseBtn.innerText = '[ + ]';
+        } else {
+            collapseBtn.innerText = '[ - ]';
+        }
+    });
+}
+
 // Listen for mouse drag on the slider
 document.getElementById('speed-slider').addEventListener('input', (e) => {
     updateSpeed(parseFloat(e.target.value));
 });
 
-// Keyboard shortcuts for speed control
+// Keyboard shortcuts for controls
 window.addEventListener('keydown', (e) => {
     if (e.repeat) return; // Prevents stuttering while holding the key down
     
@@ -163,6 +179,16 @@ window.addEventListener('keydown', (e) => {
     if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') {
         updateSpeed(1.3); 
     }
+
+    // Checks for '-' to collapse, or '=' / '+' to expand
+    if (e.key === '-' || e.key === '_') {
+        mixerPanel.classList.add('minimized');
+        collapseBtn.innerText = '[ + ]';
+    }
+    if (e.key === '=' || e.key === '+') {
+        mixerPanel.classList.remove('minimized');
+        collapseBtn.innerText = '[ - ]';
+    }
 });
 
 window.addEventListener('keyup', (e) => {
@@ -173,6 +199,27 @@ window.addEventListener('keyup', (e) => {
     }
 });
 
+// --- TOP BAR VISIBILITY LOGIC ---
+const topBar = document.getElementById('top-bar');
+
+window.addEventListener('mousemove', (e) => {
+    if (topBar) {
+        // If mouse is close to the top of the window, show the bar; otherwise, hide it
+        if (e.clientY <= 49) {
+            topBar.classList.add('visible');
+        } else {
+            // Check if mouse is also not hovering directly over the bar itself before hiding
+            const rect = topBar.getBoundingClientRect();
+            const isHoveringBar = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY <= rect.bottom;
+            
+            if (!isHoveringBar) {
+                topBar.classList.remove('visible');
+            }
+        }
+    }
+});
+
+// --- TIMELINE SLIDER LOGIC ---
 document.getElementById('timeline').addEventListener('input', (e) => {
     pausedAt = parseFloat(e.target.value);
     if (isPlaying) playAudio(pausedAt);

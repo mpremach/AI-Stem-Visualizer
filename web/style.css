@@ -11,7 +11,26 @@ body { background-color: #0b0c10; color: #45f3ff; font-family: monospace; overfl
 .glow-text { font-size: 3rem; color: #66fcf1; text-shadow: 0 0 20px #66fcf1; margin-bottom: 10px; letter-spacing: 2px; }
 
 /* --- UI CONTROLS --- */
-#top-bar { position: absolute; top: 20px; width: 100%; text-align: center; z-index: 10; }
+#top-bar {
+    position: fixed;
+    top: -60px; /* Hidden off-screen by default */
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(11, 12, 16, 0.9);
+    border: 2px solid #66fcf1;
+    border-top: none;
+    padding: 10px 20px;
+    border-radius: 0 0 8px 8px;
+    z-index: 10;
+    display: flex;
+    gap: 15px;
+    transition: top 0.3s ease-in-out; /* Smooth slide-down effect */
+    backdrop-filter: blur(5px);
+}
+
+#top-bar.visible {
+    top: 0; /* Slides down into view when active */
+}
 
 button { 
     padding: 10px 20px; background-color: #1f2833; color: #66fcf1; 
@@ -36,6 +55,18 @@ input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; bac
 input[type=range]::-webkit-slider-thumb { 
     -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; 
     background: #66fcf1; cursor: pointer; margin-top: -6px; 
+}
+
+/* Collapsed state for the mixer panel */
+#mixer.minimized {
+    height: auto !important;
+    max-height: 10px !important;
+    overflow: hidden !important;
+}
+
+/* Hide everything inside the mixer except the top header row when minimized */
+#mixer.minimized > div:not(:first-child) {
+    display: none !important;
 }
 
 /* --- PROGRESS BAR --- */
