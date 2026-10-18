@@ -391,23 +391,44 @@ const EclipseCanyonPreset = {
         this.diskMesh = new THREE.Points(this.diskGeo, this.diskMat);
         this.diskGroup.add(this.diskMesh);
 
-        this.sentinelGroup = new THREE.Group();
-        this.sentinelGroup.position.set(0, 35, -190);
-        this.group.add(this.sentinelGroup);
+        // --- NEW DRUM EFFECT: DISTANT NEBULA LIGHTNING STORM ---
+        this.stormGroup = new THREE.Group();
+        this.stormGroup.position.set(0, 35, -200); // Positioned behind the black hole
+        this.group.add(this.stormGroup);
 
-        const ringMatSolid = new THREE.MeshBasicMaterial({
-            color: 0x00e5ff, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending
-        });
-        this.outerRing = new THREE.Mesh(new THREE.TorusGeometry(90, 1.5, 16, 120), ringMatSolid);
-        this.innerRing = new THREE.Mesh(new THREE.TorusGeometry(70, 1.0, 16, 100), ringMatSolid.clone());
-        this.sentinelGroup.add(this.outerRing);
-        this.sentinelGroup.add(this.innerRing);
+        // Generate soft cloud glow texture
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        const grad = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+        grad.addColorStop(0, 'rgba(180, 70, 255, 0.9)');
+        grad.addColorStop(0.45, 'rgba(85, 0, 170, 0.5)');
+        grad.addColorStop(1, 'rgba(10, 0, 30, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 256, 256);
+        const stormTex = new THREE.CanvasTexture(canvas);
 
-        const ringMatWire = new THREE.MeshBasicMaterial({
-            color: 0x00ffaa, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, wireframe: true
-        });
-        this.dataRing = new THREE.Mesh(new THREE.TorusGeometry(80, 6, 4, 80), ringMatWire);
-        this.sentinelGroup.add(this.dataRing);
+        // Create 7 overlapping storm cells to flash across the sky
+        this.flashes = [];
+        const flashGeo = new THREE.PlaneGeometry(320, 220);
+        for (let i = 0; i < 7; i++) {
+            const flashMat = new THREE.MeshBasicMaterial({
+                map: stormTex,
+                color: i % 2 === 0 ? 0x6a0dad : 0x3b0086,
+                transparent: true,
+                opacity: 0,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            const flashMesh = new THREE.Mesh(flashGeo, flashMat);
+            flashMesh.position.set(
+                (Math.random() - 0.5) * 200,
+                (Math.random() - 0.5) * 90,
+                (Math.random() - 0.5) * 30
+            );
+            this.stormGroup.add(flashMesh);
+            this.flashes.push(flashMesh);
+        }
 
         scene.add(this.group);
     },
@@ -418,20 +439,28 @@ const EclipseCanyonPreset = {
         const v = stems.vocals / 255;
         const m = stems.melody / 255;
 
-        this.outerRing.scale.set(1 + (d * 0.2), 1 + (d * 0.05), 1);
-        this.innerRing.scale.set(1 - (d * 0.1), 1 - (d * 0.05), 1);
-        this.dataRing.scale.set(1 + (d * 0.02), 1 + (d * 0.02), 1 + (d * 0.6));
-        this.dataRing.rotation.z += 0.001 + (d * 0.015);
+        if (this.flashes) {
+            this.flashes.forEach((flash, idx) => {
+                // Fade out existing flash quickly
+                flash.material.opacity *= 0.82;
 
-        const drumFlash = 0.20 + (d * 0.95);
-        this.outerRing.material.opacity = drumFlash;
-        this.innerRing.material.opacity = drumFlash;
-        this.dataRing.material.opacity = drumFlash * 0.7;
+                // Trigger lightning strike on drum hits
+                if (d > 0.25 && Math.random() < 0.6) {
+                    flash.material.opacity = Math.min(1.0, d * 1.6);
+                    
+                    // Jump to a random spot in the distant sky
+                    flash.position.x = (Math.random() - 0.5) * 260;
+                    flash.position.y = (Math.random() - 0.5) * 110;
+                    
+                    // Randomize cloud size
+                    const s = 0.6 + Math.random() * 0.9;
+                    flash.scale.set(s, s, 1);
+                }
 
-        const ringLightness = 0.4 + (d * 0.6);
-        this.outerRing.material.color.setHSL(0.5, 1.0, ringLightness);
-        this.innerRing.material.color.setHSL(0.5, 1.0, ringLightness);
-        this.dataRing.material.color.setHSL(0.48, 1.0, ringLightness);
+                // Subtle idle rotation so the clouds feel alive
+                flash.rotation.z += 0.002 * (idx % 2 === 0 ? 1 : -1);
+            });
+        }
 
         this.scrollZ += (0.6 + (m * 1.4)); // Scroll speed influenced by melody
         const positions = this.gridGeo.attributes.position.array; 
